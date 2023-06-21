@@ -8,9 +8,9 @@ def load_df(path):
     df = pd.read_csv(path)
     df['target'] = np.where(df['heartDisease']=='Yes', 1, 0)
     df = df.drop(columns=['heartDisease'])
+    return df
 df = load_df(r"C:\Users\Rawan Alamily\Downloads\McSCert Co-op\tabnet-heart\data\life-heart.csv")
 #%%
-
 yn = lambda x: 1 if x=='Yes' else 0
 male = lambda x: 1 if x=='Male' else 0
 def age(x):
@@ -63,8 +63,11 @@ def encode_strings(df):
     df['skinCancer'] = df['skinCancer'].astype(str).astype(int)
     return df 
 #%%
-df = df.iloc[:10000,:]
+df = df.iloc[:25000,:]
 df = encode_strings(df)    
+#%%
+corr_mat = df.corr()
+corr_mat
 #%%
 df = df.copy()
 #%%
@@ -79,7 +82,6 @@ X_test = test
 #%%
 from imblearn.under_sampling import RandomUnderSampler
 rus = RandomUnderSampler(random_state=0)
-rus.fit(X,y)
 X_train_resampled, y_train_resampled = rus.fit_resample(X_train,y_train)
 X_val_resampled, y_val_resampled= rus.fit_resample(X_val, y_val)
 #%%
@@ -89,11 +91,12 @@ cat_idxs = [1,2,3,6,7,8,9,10,11,13,14,15]
 #            10:2, 11:5, 13:2, 
 #            14:2, 15:2}
 cat_dims = [2,2,2,2,2,14,2,2,5,2,2,2]
-
+#%%
+len(cat_idxs)==len(cat_dims)
 #%%
 clf = TabNetClassifier(cat_dims=cat_dims, 
-                       cat_idxs=cat_idxs, 
-                       cat_emb_dim=1)
+                       cat_idxs=cat_idxs,
+                       cat_emb_dim=15)
 #%%
 clf = TabNetClassifier()
 #%%
@@ -122,7 +125,8 @@ import matplotlib.pyplot as plt
 plt.plot(clf.history['loss'])
 
 #%%
-plt.plot(clf.history['balanced_accuracy'])
+plt.plot(clf.history['val_0_balanced_accuracy'])
+plt.plot(clf.history['val_0_accuracy'])
 
 #%%
 for value in X_train:
